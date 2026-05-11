@@ -4,43 +4,49 @@ const qrcode = require('qrcode-terminal');
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        headless: true,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
             '--single-process'
         ],
-        executablePath: '/usr/bin/google-chrome-stable'
     }
 });
 
 const avisos = {};
-const linkRegex = /chumt\.chumtsumpp\.com\/[a-zA-Z0-9]+/;
 
-client.on('qr', qr => {
-    qrcode.generate(qr, { small: true });
+client.on('qr', (qr) => {
     console.log('Escaneie o código QR acima:');
+    qrcode.generate(qr, { small: true });
 });
 
 client.on('ready', () => {
-    console.log('Robô Terra Indígena ONLINE!');
+    console.log('Bot da Terra Indígena está ONLINE!');
 });
 
-client.on('message', async msg => {
-    try {
+client.on('message', async (msg) => {
+    if (msg.body.includes('http://')  msg.body.includes('https://')  msg.body.includes('www.')) {
         const chat = await msg.getChat();
-        if (chat.isGroup && linkRegex.test(msg.body)) {
-            const chatParticipants = chat.participants;
-            const botInGroup = chatParticipants.find(p => p.id._serialized === client.info.wid._serialized);
-            if (botInGroup && botInGroup.isAdmin) {
+        const contact = await msg.getContact();
+
+        if (chat.isGroup && !msg.fromMe) {
+            const authorId = msg.author || msg.from;
+            const isAdmin = chat.participants.find(p => p.id._serialized === authorId)?.isAdmin;
+
+            if (!isAdmin) {
                 await msg.delete(true);
-                console.log('Link removido com sucesso.');
+                if (!avisos[authorId]) {
+                    avisos[authorId] = 1;
+                    await chat.sendMessage(@${contact.id.user}, links não são permitidos neste grupo., {
+                        mentions: [contact]
+                    });
+                }
             }
         }
-    } catch (error) {
-        console.error('Erro ao processar mensagem:', error);
     }
 });
 
-client.initialize();  
+client.initialize();
