@@ -5,13 +5,13 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         handleSIGTERM: false,
-        executablePath: '/usr/bin/google-chrome-stable', // Caminho padrão do plano Starter
+        executablePath: '/usr/bin/google-chrome-stable', 
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--single-process',
-            '--no-zygote'
+            '--no-zygote',
+            '--single-process'
         ],
     }
 });
@@ -19,12 +19,12 @@ const client = new Client({
 const penalidades = {};
 
 client.on('qr', (qr) => {
-    console.log('--- ESCANEIE O QR CODE NO LOG ABAIXO ---');
+    console.log('--- ESCANEIE O QR CODE ABAIXO ---');
     qrcode.generate(qr, { small: true });
 });
 
 client.on('ready', () => {
-    console.log('SISTEMA TERRA INDÍGENA ONLINE E PROTEGIDO!');
+    console.log('SISTEMA TERRA INDÍGENA ONLINE NO PLANO STARTER!');
 });
 
 client.on('message', async (msg) => {
@@ -36,9 +36,8 @@ client.on('message', async (msg) => {
                 await msg.delete(true);
                 if (!penalidades[authorId]) penalidades[authorId] = 0;
                 penalidades[authorId]++;
-
                 if (penalidades[authorId] < 3) {
-                    await chat.sendMessage(`⚠️ @${authorId.split('@')[0]}, avisos: ${penalidades[authorId]}/3.`, { mentions: [authorId] });
+                    await chat.sendMessage(`⚠️ @${authorId.split('@')[0]}, links não são permitidos. Aviso ${penalidades[authorId]}/3.`, { mentions: [authorId] });
                 } else {
                     await chat.removeParticipants([authorId]);
                     delete penalidades[authorId];
